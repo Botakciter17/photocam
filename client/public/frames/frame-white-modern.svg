@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <filter id="shadow" x="-2%" y="-2%" width="104%" height="104%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000000" flood-opacity="0.3" />
+    </filter>
+  </defs>
+
+  <!-- Outer Polaroid Viewport Border with Shadow -->
+  <rect x="16" y="16" width="1888" height="1048" rx="28" fill="none" stroke="#FFFFFF" stroke-width="32" filter="url(#shadow)" />
+  <rect x="36" y="36" width="1848" height="1008" rx="16" fill="none" stroke="#D34B4D" stroke-width="4" />
+
+  <!-- Bottom Brand Label with Duolingo Red -->
+  <rect x="680" y="995" width="560" height="52" rx="20" fill="#FFFFFF" filter="url(#shadow)" />
+  <rect x="680" y="995" width="560" height="52" rx="20" fill="none" stroke="#D34B4D" stroke-width="3" />
+  <text x="960" y="1030" font-family="'Nunito', sans-serif" font-size="22" font-weight="900" fill="#D34B4D" text-anchor="middle" letter-spacing="4">
+    ★ POLAROID PHOTOBOOTH ★
+  </text>
+</svg>

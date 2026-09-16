@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <!-- Film Strip 35mm Border -->
+  <rect x="0" y="0" width="1920" height="1080" fill="none" stroke="#111827" stroke-width="64" />
+
+  <!-- Top sprocket holes -->
+  <g fill="#F9FAFB">
+    <rect x="50" y="16" width="36" height="32" rx="6" />
+    <rect x="130" y="16" width="36" height="32" rx="6" />
+    <rect x="210" y="16" width="36" height="32" rx="6" />
+    <rect x="290" y="16" width="36" height="32" rx="6" />
+    <rect x="370" y="16" width="36" height="32" rx="6" />
+    <rect x="450" y="16" width="36" height="32" rx="6" />
+    <rect x="530" y="16" width="36" height="32" rx="6" />
+    <rect x="610" y="16" width="36" height="32" rx="6" />
+    <rect x="690" y="16" width="36" height="32" rx="6" />
+    <rect x="770" y="16" width="36" height="32" rx="6" />
+    <rect x="850" y="16" width="36" height="32" rx="6" />
+    <rect x="930" y="16" width="36" height="32" rx="6" />
+    <rect x="1010" y="16" width="36" height="32" rx="6" />
+    <rect x="1090" y="16" width="36" height="32" rx="6" />
+    <rect x="1170" y="16" width="36" height="32" rx="6" />
+    <rect x="1250" y="16" width="36" height="32" rx="6" />
+    <rect x="1330" y="16" width="36" height="32" rx="6" />
+    <rect x="1410" y="16" width="36" height="32" rx="6" />
+    <rect x="1490" y="16" width="36" height="32" rx="6" />
+    <rect x="1570" y="16" width="36" height="32" rx="6" />
+    <rect x="1650" y="16" width="36" height="32" rx="6" />
+    <rect x="1730" y="16" width="36" height="32" rx="6" />
+    <rect x="1810" y="16" width="36" height="32" rx="6" />
+  </g>
+
+  <!-- Bottom sprocket holes -->
+  <g fill="#F9FAFB">
+    <rect x="50" y="1032" width="36" height="32" rx="6" />
+    <rect x="130" y="1032" width="36" height="32" rx="6" />
+    <rect x="210" y="1032" width="36" height="32" rx="6" />
+    <rect x="290" y="1032" width="36" height="32" rx="6" />
+    <rect x="370" y="1032" width="36" height="32" rx="6" />
+    <rect x="450" y="1032" width="36" height="32" rx="6" />
+    <rect x="530" y="1032" width="36" height="32" rx="6" />
+    <rect x="610" y="1032" width="36" height="32" rx="6" />
+    <rect x="690" y="1032" width="36" height="32" rx="6" />
+    <rect x="770" y="1032" width="36" height="32" rx="6" />
+    <rect x="850" y="1032" width="36" height="32" rx="6" />
+    <rect x="930" y="1032" width="36" height="32" rx="6" />
+    <rect x="1010" y="1032" width="36" height="32" rx="6" />
+    <rect x="1090" y="1032" width="36" height="32" rx="6" />
+    <rect x="1170" y="1032" width="36" height="32" rx="6" />
+    <rect x="1250" y="1032" width="36" height="32" rx="6" />
+    <rect x="1330" y="1032" width="36" height="32" rx="6" />
+    <rect x="1410" y="1032" width="36" height="32" rx="6" />
+    <rect x="1490" y="1032" width="36" height="32" rx="6" />
+    <rect x="1570" y="1032" width="36" height="32" rx="6" />
+    <rect x="1650" y="1032" width="36" height="32" rx="6" />
+    <rect x="1730" y="1032" width="36" height="32" rx="6" />
+    <rect x="1810" y="1032" width="36" height="32" rx="6" />
+  </g>
+
+  <!-- Film brand stamp -->
+  <text x="960" y="50" font-family="'Courier New', monospace" font-size="22" font-weight="bold" fill="#F59E0B" text-anchor="middle" letter-spacing="8">
+    KODAK COLORPLUS 200 • 35MM EXPOSURE
+  </text>
+</svg>

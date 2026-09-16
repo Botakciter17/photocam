@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <linearGradient id="gold-foil" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D97706" />
+      <stop offset="50%" stop-color="#FCD34D" />
+      <stop offset="100%" stop-color="#B45309" />
+    </linearGradient>
+  </defs>
+
+  <!-- Heavy Matte Dark Slate Frame -->
+  <rect x="0" y="0" width="1920" height="1080" fill="none" stroke="#0F172A" stroke-width="56" />
+
+  <!-- Gold Double Inset Border -->
+  <rect x="64" y="64" width="1792" height="952" fill="none" stroke="url(#gold-foil)" stroke-width="3" />
+  <rect x="74" y="74" width="1772" height="932" fill="none" stroke="url(#gold-foil)" stroke-width="1" stroke-dasharray="8,6" />
+
+  <!-- Center Gold Badge -->
+  <text x="960" y="1038" font-family="'Georgia', serif" font-size="22" font-style="italic" fill="#FCD34D" text-anchor="middle" letter-spacing="4">
+    — Vintage Memoir Collection —
+  </text>
+</svg>
