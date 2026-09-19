@@ -10,7 +10,7 @@ import { dispatchVirtualClick } from './utils/virtualClick';
 import { VirtualCursor } from './components/VirtualCursor';
 import { HandWarningOverlay } from './components/HandWarningOverlay';
 import { NavigationModal } from './components/NavigationModal';
-import { createAnimatedBtsGif, createAnimatedBtsVideo } from './utils/btsGenerator';
+import { createAnimatedBtsVideo } from './utils/btsGenerator';
 import { MainMenuView } from './views/MainMenuView';
 import { SetupView } from './views/SetupView';
 import { CaptureView } from './views/CaptureView';
@@ -52,7 +52,6 @@ export const App: React.FC = () => {
   const [targetRetakeIndex, setTargetRetakeIndex] = useState<number | null>(null);
   const [sessionResult, setSessionResult] = useState<SessionResult | null>(null);
   const [compositePhotoUrl, setCompositePhotoUrl] = useState<string | null>(null);
-  const [btsGifUrl, setBtsGifUrl] = useState<string | null>(null);
   const [btsVideoUrl, setBtsVideoUrl] = useState<string | null>(null);
   const [isSavingSession, setIsSavingSession] = useState<boolean>(false);
 
@@ -212,7 +211,6 @@ export const App: React.FC = () => {
     setTargetRetakeIndex(null);
     setSessionResult(null);
     setCompositePhotoUrl(null);
-    setBtsGifUrl(null);
     setBtsVideoUrl(null);
     setIsSavingSession(false);
     setNoHandSeconds(0);
@@ -257,25 +255,9 @@ export const App: React.FC = () => {
     setCompositePhotoUrl(compositeDataUrl);
     setIsSavingSession(true);
 
-    let gifDataUrl: string | undefined;
     let videoDataUrl: string | undefined;
 
-    // 1. Generate Animated BTS Polaroid Strip GIF (BeautyPlus Style)
-    try {
-      const btsGif = await createAnimatedBtsGif(
-        photos.slice(0, shotCount),
-        btsFramesPerShot,
-        shotCount,
-        selectedFrame,
-        filter
-      );
-      setBtsGifUrl(btsGif.dataUrl);
-      gifDataUrl = btsGif.dataUrl;
-    } catch (err) {
-      console.error('Failed to generate BTS GIF:', err);
-    }
-
-    // 2. Generate Animated BTS Polaroid Strip Video MP4
+    // Generate Animated BTS Polaroid Strip Video MP4/WebM
     try {
       const btsVideo = await createAnimatedBtsVideo(
         photos.slice(0, shotCount),
@@ -298,7 +280,6 @@ export const App: React.FC = () => {
           image: compositeDataUrl,
           shotCount,
           frameId: selectedFrame.id,
-          gif: gifDataUrl,
           video: videoDataUrl
         })
       });
@@ -428,12 +409,11 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* Screen 4: QR Download (Result Strip + BTS GIF + BTS MP4 + Big QR + Direct Download) */}
+      {/* Screen 4: QR Download (Result Strip + BTS MP4 + Big QR + Direct Download) */}
       {step === 'download' && sessionResult && (
         <DownloadView
           session={sessionResult}
           compositePhotoUrl={compositePhotoUrl}
-          btsGifUrl={btsGifUrl}
           btsVideoUrl={btsVideoUrl}
           secondsRemaining={downloadSecondsRemaining}
           onBackToResult={() => setStep('preview')}

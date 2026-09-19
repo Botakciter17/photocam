@@ -23,6 +23,5 @@ export interface SessionResult {
   qrDataUrl: string;
   lanIp: string;
   permanent?: boolean;
-  hasGif?: boolean;
   hasVideo?: boolean;
 }

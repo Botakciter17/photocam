@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { ShotCount, FrameOption, FilterType } from '../types/photobooth';
 import { AVAILABLE_FRAMES } from '../types/frames';
 import { createCompositePhoto } from '../utils/canvasCompositor';
-import { createAnimatedBtsGif } from '../utils/btsGenerator';
 import { FrameThumbnail } from '../components/FrameThumbnail';
-import { RotateCcw, ArrowRight, Sparkles, Check, CheckCircle2, Image as ImageIcon, Film } from 'lucide-react';
+import { RotateCcw, ArrowRight, Sparkles, Check, CheckCircle2 } from 'lucide-react';
 
 interface PreviewViewProps {
   photos: string[];
@@ -22,7 +21,6 @@ interface PreviewViewProps {
 
 export const PreviewView: React.FC<PreviewViewProps> = ({
   photos,
-  btsFramesPerShot = [[], [], [], []],
   shotCount,
   selectedFrame,
   selectedFilter,
@@ -34,8 +32,6 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
   onConfirm
 }) => {
   const [compositeUrl, setCompositeUrl] = useState<string | null>(null);
-  const [gifPreviewUrl, setGifPreviewUrl] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'photo' | 'gif'>('gif');
   const [isCompositing, setIsCompositing] = useState<boolean>(true);
 
   const filterOptions: { value: FilterType; label: string }[] = [
@@ -44,7 +40,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
     { value: 'vintage', label: 'Vintage' }
   ];
 
-  // 1. Re-composite Polaroid Strip whenever frame or filter is changed
+  // Re-composite Polaroid Strip whenever frame or filter is changed
   useEffect(() => {
     let isMounted = true;
     setIsCompositing(true);
@@ -65,27 +61,6 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
       isMounted = false;
     };
   }, [photos, shotCount, selectedFrame, selectedFilter]);
-
-  // 2. Pre-generate Animated BTS Polaroid Strip GIF for real-time live motion preview
-  useEffect(() => {
-    let isMounted = true;
-
-    if (photos.length > 0) {
-      createAnimatedBtsGif(photos, btsFramesPerShot, shotCount, selectedFrame, selectedFilter)
-        .then((res) => {
-          if (isMounted) {
-            setGifPreviewUrl(res.dataUrl);
-          }
-        })
-        .catch((err) => {
-          console.error('BTS GIF preview generation error:', err);
-        });
-    }
-
-    return () => {
-      isMounted = false;
-    };
-  }, [photos, btsFramesPerShot, shotCount, selectedFrame, selectedFilter]);
 
   return (
     <div className="flex flex-col h-full w-full bg-[#FDF7F5] text-[#4B3F3D] overflow-hidden select-none p-6 gap-6">
@@ -108,82 +83,26 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
         </div>
       </header>
 
-      {/* 2. Main Content Split: Left (Result Strip / GIF Preview) | Right (Controls & Retake) */}
+      {/* 2. Main Content Split: Left (Result Strip) | Right (Controls & Retake) */}
       <main className="flex-1 flex flex-col md:flex-row overflow-hidden gap-6">
-        {/* Left Column: Result Preview with Tab Switcher */}
+        {/* Left Column: Result Strip Composite Display */}
         <section className="flex-[48] flex flex-col items-center justify-center">
-          {/* Tab Switcher: Polaroid Strip vs Animated BTS GIF */}
-          <div className="flex gap-2 p-1.5 bg-white rounded-2xl border-2 border-[#E8CEC9] mb-3 shadow-sm">
-            <button
-              data-interactive="true"
-              onClick={() => setActiveTab('photo')}
-              className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
-                activeTab === 'photo'
-                  ? 'bg-duo-red text-white shadow-sm'
-                  : 'text-[#8B7B78] hover:text-duo-red'
-              }`}
-            >
-              <ImageIcon className="w-4 h-4 stroke-[2.5]" />
-              <span>Polaroid Strip</span>
-            </button>
-
-            <button
-              data-interactive="true"
-              onClick={() => setActiveTab('gif')}
-              className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
-                activeTab === 'gif'
-                  ? 'bg-duo-red text-white shadow-sm'
-                  : 'text-[#8B7B78] hover:text-duo-red'
-              }`}
-            >
-              <Film className="w-4 h-4 stroke-[2.5]" />
-              <span>Animasi GIF (Bergerak)</span>
-            </button>
-          </div>
-
-          {/* Preview Canvas / GIF Box */}
-          <div className="relative w-full h-full max-h-[74vh] rounded-[2.5rem] bg-white border-4 border-b-8 border-[#E8CEC9] shadow-xl flex items-center justify-center p-4">
-            {activeTab === 'photo' && (
-              <>
-                {isCompositing ? (
-                  <div className="flex flex-col items-center gap-3 text-duo-red">
-                    <div className="w-12 h-12 border-4 border-duo-red border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm font-black tracking-wide">
-                      Memperbarui strip polaroid kamu...
-                    </span>
-                  </div>
-                ) : compositeUrl ? (
-                  <img
-                    src={compositeUrl}
-                    alt="Result Strip Composite"
-                    className="h-full max-h-[68vh] w-auto max-w-full object-contain rounded-2xl shadow-2xl pointer-events-none"
-                  />
-                ) : (
-                  <span className="text-duo-red font-black text-sm">Gagal membuat preview foto</span>
-                )}
-              </>
-            )}
-
-            {activeTab === 'gif' && (
-              <>
-                {gifPreviewUrl ? (
-                  <div className="flex flex-col items-center gap-3">
-                    <img
-                      src={gifPreviewUrl}
-                      alt="Animated BTS Polaroid Strip"
-                      className="h-full max-h-[68vh] w-auto max-w-full object-contain rounded-2xl shadow-2xl pointer-events-none"
-                    />
-                    <span className="text-xs font-black text-duo-red bg-duo-redLight px-3 py-1 rounded-full border border-duo-border">
-                      Animasi Gerakan Dibalik Layar (Live Looping)
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-3 text-duo-red">
-                    <div className="w-10 h-10 border-4 border-duo-red border-t-transparent rounded-full animate-spin" />
-                    <span className="text-xs font-bold text-duo-muted">Menyiapkan animasi GIF...</span>
-                  </div>
-                )}
-              </>
+          <div className="relative w-full h-full max-h-[78vh] rounded-[2.5rem] bg-white border-4 border-b-8 border-[#E8CEC9] shadow-xl flex items-center justify-center p-4">
+            {isCompositing ? (
+              <div className="flex flex-col items-center gap-3 text-duo-red">
+                <div className="w-12 h-12 border-4 border-duo-red border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm font-black tracking-wide">
+                  Memperbarui strip polaroid kamu...
+                </span>
+              </div>
+            ) : compositeUrl ? (
+              <img
+                src={compositeUrl}
+                alt="Result Strip Composite"
+                className="h-full max-h-[72vh] w-auto max-w-full object-contain rounded-2xl shadow-2xl pointer-events-none"
+              />
+            ) : (
+              <span className="text-duo-red font-black text-sm">Gagal membuat preview foto</span>
             )}
           </div>
         </section>
@@ -201,7 +120,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
                 Udah oke belum?
               </h3>
               <p className="text-[#8B7B78] text-xs font-bold mt-1">
-                Kamu bisa klik tab di kiri untuk melihat foto polaroid atau animasi GIF bergeraknya!
+                Kalau ada pose yang kurang pas, kamu bisa retake satu-satu tanpa harus ngulang semua.
               </p>
             </div>
 
@@ -296,7 +215,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
               {isSaving ? (
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin" />
-                  <span className="text-base font-black">MEMPROSES BTS & FOTO...</span>
+                  <span className="text-base font-black">MEMPROSES VIDEO LIVE & FOTO...</span>
                 </div>
               ) : (
                 <>

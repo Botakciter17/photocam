@@ -13,21 +13,19 @@ export interface SessionData {
   filename: string;
   shotCount: number;
   frameId: string;
-  hasGif?: boolean;
   hasVideo?: boolean;
 }
 
 const sessionsMap = new Map<string, SessionData>();
 
 /**
- * Saves photo, optional animated GIF, and optional MP4 video to permanent storage.
+ * Saves photo and optional video to permanent storage.
  */
 export async function savePhoto(
   token: string,
   base64Data: string,
   shotCount: number,
   frameId: string,
-  base64Gif?: string,
   base64Video?: string
 ): Promise<SessionData> {
   // 1. Save Polaroid JPG
@@ -37,26 +35,16 @@ export async function savePhoto(
   const filePath = path.join(CONFIG.STORAGE_DIR, filename);
   await fs.promises.writeFile(filePath, buffer);
 
-  // 2. Save Animated GIF if provided
-  let hasGif = false;
-  if (base64Gif && typeof base64Gif === 'string') {
-    try {
-      const gifMatches = base64Gif.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-      const gifBuffer = gifMatches ? Buffer.from(gifMatches[2], 'base64') : Buffer.from(base64Gif, 'base64');
-      await fs.promises.writeFile(path.join(CONFIG.STORAGE_DIR, `${token}.gif`), gifBuffer);
-      hasGif = true;
-    } catch (err) {
-      console.warn('Failed to save GIF:', err);
-    }
-  }
-
-  // 3. Save MP4 Video if provided
+  // 2. Save Video if provided (detect mp4 vs webm extension from MIME)
   let hasVideo = false;
   if (base64Video && typeof base64Video === 'string') {
     try {
       const vidMatches = base64Video.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+      const mime = vidMatches ? vidMatches[1] : 'video/mp4';
       const vidBuffer = vidMatches ? Buffer.from(vidMatches[2], 'base64') : Buffer.from(base64Video, 'base64');
-      await fs.promises.writeFile(path.join(CONFIG.STORAGE_DIR, `${token}.mp4`), vidBuffer);
+
+      const ext = mime.includes('webm') ? 'webm' : 'mp4';
+      await fs.promises.writeFile(path.join(CONFIG.STORAGE_DIR, `${token}.${ext}`), vidBuffer);
       hasVideo = true;
     } catch (err) {
       console.warn('Failed to save Video:', err);
@@ -69,7 +57,6 @@ export async function savePhoto(
     filename,
     shotCount,
     frameId,
-    hasGif,
     hasVideo
   };
 
@@ -96,23 +83,19 @@ export function getPhotoPath(token: string): string | null {
 }
 
 /**
- * Gets the file path for an animated GIF by token.
+ * Gets the file path & mime for a video by token.
+ * Checks for both .mp4 and .webm files on disk.
  */
-export function getGifPath(token: string): string | null {
-  const filePath = path.join(CONFIG.STORAGE_DIR, `${token}.gif`);
-  if (fs.existsSync(filePath)) {
-    return filePath;
+export function getVideoFileInfo(token: string): { filePath: string; mimeType: string; extension: string } | null {
+  const mp4Path = path.join(CONFIG.STORAGE_DIR, `${token}.mp4`);
+  if (fs.existsSync(mp4Path)) {
+    return { filePath: mp4Path, mimeType: 'video/mp4', extension: 'mp4' };
   }
-  return null;
-}
 
-/**
- * Gets the file path for an MP4 video by token.
- */
-export function getVideoPath(token: string): string | null {
-  const filePath = path.join(CONFIG.STORAGE_DIR, `${token}.mp4`);
-  if (fs.existsSync(filePath)) {
-    return filePath;
+  const webmPath = path.join(CONFIG.STORAGE_DIR, `${token}.webm`);
+  if (fs.existsSync(webmPath)) {
+    return { filePath: webmPath, mimeType: 'video/webm', extension: 'webm' };
   }
+
   return null;
 }

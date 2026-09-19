@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { SessionResult } from '../types/photobooth';
-import { Download, Copy, RotateCcw, QrCode, Check, Image, Film, Video, Sparkles } from 'lucide-react';
+import { Download, Copy, RotateCcw, QrCode, Check, Image, Video } from 'lucide-react';
 
 interface DownloadViewProps {
   session: SessionResult;
   compositePhotoUrl?: string | null;
-  btsGifUrl?: string | null;
   btsVideoUrl?: string | null;
   secondsRemaining: number;
   onBackToResult: () => void;
@@ -16,14 +15,13 @@ interface DownloadViewProps {
 export const DownloadView: React.FC<DownloadViewProps> = ({
   session,
   compositePhotoUrl,
-  btsGifUrl,
   btsVideoUrl,
   secondsRemaining,
   onBackToResult,
   onNewSession
 }) => {
   const [copied, setCopied] = useState<boolean>(false);
-  const [previewTab, setPreviewTab] = useState<'photo' | 'gif' | 'video'>('gif');
+  const [previewTab, setPreviewTab] = useState<'photo' | 'video'>('video');
 
   useEffect(() => {
     try {
@@ -80,11 +78,11 @@ export const DownloadView: React.FC<DownloadViewProps> = ({
         </button>
       </header>
 
-      {/* 2. Main 2-Column Split: Left (Preview Strip / GIF / Video) | Right (QR & Download Actions) */}
+      {/* 2. Main 2-Column Split: Left (Preview Strip / Video) | Right (QR & Download Actions) */}
       <main className="flex-1 flex flex-col md:flex-row overflow-hidden gap-6">
         {/* Left Column: Result Preview with Tab Switcher */}
         <section className="flex-[48] flex flex-col items-center justify-center">
-          {/* Preview Tab Buttons with Duolingo 3D Chunky Style */}
+          {/* Preview Tab Buttons */}
           <div className="flex gap-2.5 p-2 bg-white rounded-2xl border-2 border-[#E8CEC9] mb-3 shadow-sm">
             <button
               data-interactive="true"
@@ -97,19 +95,6 @@ export const DownloadView: React.FC<DownloadViewProps> = ({
               <span>Polaroid (Foto)</span>
             </button>
 
-            {btsGifUrl && (
-              <button
-                data-interactive="true"
-                onClick={() => setPreviewTab('gif')}
-                className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
-                  previewTab === 'gif' ? 'btn-select-active' : 'btn-select-inactive'
-                }`}
-              >
-                <Film className="w-4 h-4 stroke-[2.5]" />
-                <span>Animasi GIF (Bergerak)</span>
-              </button>
-            )}
-
             {btsVideoUrl && (
               <button
                 data-interactive="true"
@@ -119,7 +104,7 @@ export const DownloadView: React.FC<DownloadViewProps> = ({
                 }`}
               >
                 <Video className="w-4 h-4 stroke-[2.5]" />
-                <span>Video Live (MP4)</span>
+                <span>Video Live</span>
               </button>
             )}
           </div>
@@ -133,21 +118,6 @@ export const DownloadView: React.FC<DownloadViewProps> = ({
               />
             )}
 
-            {previewTab === 'gif' && (
-              btsGifUrl ? (
-                <img
-                  src={btsGifUrl}
-                  alt="BTS Animated Polaroid Strip"
-                  className="h-full max-h-[68vh] w-auto max-w-full object-contain rounded-2xl shadow-2xl pointer-events-none"
-                />
-              ) : (
-                <div className="flex flex-col items-center gap-3 text-duo-red">
-                  <div className="w-10 h-10 border-4 border-duo-red border-t-transparent rounded-full animate-spin" />
-                  <span className="text-xs font-bold text-duo-muted">Menyiapkan animasi GIF...</span>
-                </div>
-              )
-            )}
-
             {previewTab === 'video' && (
               btsVideoUrl ? (
                 <video
@@ -156,12 +126,13 @@ export const DownloadView: React.FC<DownloadViewProps> = ({
                   loop
                   muted
                   playsInline
-                  className="h-full max-h-[68vh] w-auto max-w-full object-contain rounded-2xl shadow-2xl pointer-events-none"
+                  controls
+                  className="h-full max-h-[68vh] w-auto max-w-full object-contain rounded-2xl shadow-2xl"
                 />
               ) : (
                 <div className="flex flex-col items-center gap-3 text-duo-red">
                   <div className="w-10 h-10 border-4 border-duo-red border-t-transparent rounded-full animate-spin" />
-                  <span className="text-xs font-bold text-duo-muted">Menyiapkan video MP4...</span>
+                  <span className="text-xs font-bold text-duo-muted">Menyiapkan video live...</span>
                 </div>
               )
             )}
@@ -180,7 +151,7 @@ export const DownloadView: React.FC<DownloadViewProps> = ({
                 Scan Buat Simpan ke HP!
               </h2>
               <p className="text-[#8B7B78] text-xs font-bold mt-1">
-                Scan QR code untuk mengunduh foto polaroid, animasi GIF, atau video BTS
+                Scan QR code untuk mengunduh foto polaroid atau video live dibalik layar
               </p>
             </div>
 
@@ -203,40 +174,37 @@ export const DownloadView: React.FC<DownloadViewProps> = ({
               </p>
             </div>
 
-            {/* Action Buttons for Multiple Formats */}
+            {/* Action Buttons */}
             <div className="w-full space-y-2 pt-1">
-              <button
-                data-interactive="true"
-                onClick={() => downloadFile(compositePhotoUrl, `photobooth-${session.token.slice(0, 8)}.jpg`)}
-                className="w-full h-14 btn-duo-primary text-base flex items-center justify-center gap-2.5"
-              >
-                <Download className="w-5 h-5 stroke-[3]" />
-                <span>UNDUH POLAROID (JPG)</span>
-              </button>
-
-              <div className="grid grid-cols-2 gap-2.5">
-                {btsGifUrl && (
-                  <button
-                    data-interactive="true"
-                    onClick={() => downloadFile(btsGifUrl, `photobooth-bts-${session.token.slice(0, 8)}.gif`)}
-                    className="h-12 btn-duo-secondary text-xs font-black flex items-center justify-center gap-1.5 hover:border-duo-red"
-                  >
-                    <Film className="w-4 h-4 text-duo-red stroke-[2.5]" />
-                    <span>UNDUH GIF</span>
-                  </button>
-                )}
-
-                {btsVideoUrl && (
+              {btsVideoUrl ? (
+                <>
                   <button
                     data-interactive="true"
                     onClick={() => downloadFile(btsVideoUrl, `photobooth-live-${session.token.slice(0, 8)}.mp4`)}
-                    className="h-12 btn-duo-secondary text-xs font-black flex items-center justify-center gap-1.5 hover:border-duo-red"
+                    className="w-full h-14 btn-duo-primary text-base flex items-center justify-center gap-2.5"
                   >
-                    <Video className="w-4 h-4 text-duo-red stroke-[2.5]" />
-                    <span>UNDUH MP4</span>
+                    <Download className="w-5 h-5 stroke-[3]" />
+                    <span>UNDUH VIDEO LIVE</span>
                   </button>
-                )}
-              </div>
+                  <button
+                    data-interactive="true"
+                    onClick={() => downloadFile(compositePhotoUrl, `photobooth-${session.token.slice(0, 8)}.jpg`)}
+                    className="w-full h-12 btn-duo-secondary text-xs font-black flex items-center justify-center gap-2 hover:border-duo-red"
+                  >
+                    <Image className="w-4 h-4 text-duo-red stroke-[2.5]" />
+                    <span>UNDUH POLAROID (JPG)</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  data-interactive="true"
+                  onClick={() => downloadFile(compositePhotoUrl, `photobooth-${session.token.slice(0, 8)}.jpg`)}
+                  className="w-full h-14 btn-duo-primary text-base flex items-center justify-center gap-2.5"
+                >
+                  <Download className="w-5 h-5 stroke-[3]" />
+                  <span>UNDUH POLAROID (JPG)</span>
+                </button>
+              )}
 
               <div className="grid grid-cols-2 gap-2.5 pt-1">
                 <button

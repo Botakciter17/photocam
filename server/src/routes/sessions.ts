@@ -9,7 +9,7 @@ export const sessionsRouter = Router();
 
 sessionsRouter.post('/', async (req: Request, res: Response) => {
   try {
-    const { image, shotCount, frameId, gif, video } = req.body;
+    const { image, shotCount, frameId, video } = req.body;
 
     if (!image || typeof image !== 'string') {
       res.status(400).json({ error: 'Missing or invalid base64 image data' });
@@ -22,7 +22,6 @@ sessionsRouter.post('/', async (req: Request, res: Response) => {
       image,
       Number(shotCount) || 1,
       frameId || 'default',
-      gif,
       video
     );
 
@@ -46,7 +45,6 @@ sessionsRouter.post('/', async (req: Request, res: Response) => {
       qrDataUrl,
       lanIp,
       permanent: true,
-      hasGif: session.hasGif,
       hasVideo: session.hasVideo
     });
   } catch (err: any) {
