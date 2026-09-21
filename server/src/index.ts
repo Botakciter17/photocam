@@ -4,6 +4,7 @@ import { CONFIG } from './config.js';
 import { getLocalIp } from './network.js';
 import { sessionsRouter } from './routes/sessions.js';
 import { downloadRouter } from './routes/download.js';
+import { detectPrinterStatus } from './printer.js';
 
 const app = express();
 
@@ -17,6 +18,21 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Routes
 app.use('/api/sessions', sessionsRouter);
 app.use('/', downloadRouter);
+
+// Printer status detection
+app.get('/api/printer/status', async (req, res) => {
+  try {
+    const status = await detectPrinterStatus();
+    res.json(status);
+  } catch (err: any) {
+    res.status(500).json({
+      connected: false,
+      defaultPrinter: null,
+      printers: [],
+      statusText: 'Gagal membaca status printer'
+    });
+  }
+});
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -1,6 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavMode, PrintLayout } from '../types/photobooth';
-import { Sparkles, Mouse, Hand, Check, X, Printer } from 'lucide-react';
+import { Sparkles, Mouse, Hand, Check, X, Printer, RefreshCw } from 'lucide-react';
+
+interface PrinterStatusData {
+  connected: boolean;
+  defaultPrinter: string | null;
+  printers: string[];
+  statusText: string;
+}
 
 interface NavigationModalProps {
   isOpen: boolean;
@@ -25,6 +32,30 @@ export const NavigationModal: React.FC<NavigationModalProps> = ({
   onChangePrintLayout,
   onClose
 }) => {
+  const [printerStatus, setPrinterStatus] = useState<PrinterStatusData | null>(null);
+  const [isLoadingPrinter, setIsLoadingPrinter] = useState<boolean>(false);
+
+  const fetchPrinterStatus = async () => {
+    setIsLoadingPrinter(true);
+    try {
+      const res = await fetch('/api/printer/status');
+      if (res.ok) {
+        const data = await res.json();
+        setPrinterStatus(data);
+      }
+    } catch (err) {
+      console.warn('Failed to check printer status:', err);
+    } finally {
+      setIsLoadingPrinter(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchPrinterStatus();
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -139,7 +170,58 @@ export const NavigationModal: React.FC<NavigationModalProps> = ({
 
         {/* Section 2: Auto-Print Settings */}
         <div className="w-full bg-[#FDF7F5] p-4 rounded-3xl border-2 border-[#E8CEC9] border-b-4 border-b-[#D5C2BE] mb-6 text-left">
-          <div className="flex items-center justify-between mb-3">
+          {/* Printer Hardware Connection Status Card */}
+          <div className="w-full bg-white p-3 rounded-2xl border-2 border-[#E8CEC9] mb-3.5 flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-2.5 text-left min-w-0 flex-1">
+              <div
+                className={`w-3.5 h-3.5 rounded-full flex-shrink-0 transition-colors ${
+                  printerStatus?.connected
+                    ? 'bg-[#58CC02] shadow-[0_0_8px_#58CC02]'
+                    : 'bg-[#D34B4D] shadow-[0_0_8px_#D34B4D]'
+                }`}
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-xs font-black text-duo-text">
+                    {printerStatus?.connected ? 'Printer Siap' : 'Printer Belum Tersambung'}
+                  </span>
+                  <span
+                    className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${
+                      printerStatus?.connected
+                        ? 'bg-[#EFFFE0] text-[#46A302] border border-[#B4F087]'
+                        : 'bg-[#FFF0ED] text-duo-red border border-duo-border'
+                    }`}
+                  >
+                    {printerStatus?.connected ? 'Online' : 'Offline'}
+                  </span>
+                </div>
+                <p className="text-[11px] font-bold text-[#8B7B78] truncate mt-0.5">
+                  {printerStatus?.defaultPrinter
+                    ? `${printerStatus.defaultPrinter}: ${printerStatus.statusText}`
+                    : 'Belum ada printer terpasang di sistem'}
+                </p>
+                {!printerStatus?.connected && (
+                  <p className="text-[10px] font-black text-duo-red mt-0.5">
+                    Colokkan kabel USB printer ke PC lalu klik Cek Ulang
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              data-interactive="true"
+              onClick={fetchPrinterStatus}
+              disabled={isLoadingPrinter}
+              className="btn-duo-secondary px-2.5 py-1.5 rounded-xl text-[10px] font-black flex items-center gap-1 ml-2 flex-shrink-0"
+              title="Cek ulang koneksi printer"
+            >
+              <RefreshCw className={`w-3 h-3 stroke-[2.5] ${isLoadingPrinter ? 'animate-spin' : ''}`} />
+              <span>Cek Ulang</span>
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-2">
               <Printer className="w-4 h-4 text-duo-red stroke-[2.5]" />
               <span className="text-xs font-black uppercase tracking-wider text-[#4B3F3D]">
