@@ -17,7 +17,7 @@ interface CaptureViewProps {
   onComplete: (photos: string[], btsFramesPerShot?: string[][]) => void;
 }
 
-export const CaptureView: React.FC<CaptureViewProps> = ({
+const CaptureViewComponent: React.FC<CaptureViewProps> = ({
   stream,
   shotCount,
   delay,
@@ -84,7 +84,7 @@ export const CaptureView: React.FC<CaptureViewProps> = ({
 
   // Countdown timer loop
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setTimeout>;
 
     if (countdown !== null && countdown > 0) {
       soundEffects.playBeep(countdown === 1);
@@ -261,3 +261,5 @@ export const CaptureView: React.FC<CaptureViewProps> = ({
     </div>
   );
 };
+
+export const CaptureView = React.memo(CaptureViewComponent);

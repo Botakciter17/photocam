@@ -46,13 +46,13 @@ export class CursorSmoother {
       return { x: this.currentX, y: this.currentY };
     }
 
-    // Adaptive smoothing factor based on velocity
+    // Adaptive smoothing factor based on velocity (crisp & zero-lag)
     const dx = targetX - this.currentX;
     const dy = targetY - this.currentY;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
-    // Fast movement gets high alpha (responsive), slow movement gets low alpha (smooth)
-    const alpha = Math.min(0.85, Math.max(0.32, 0.32 + dist * 0.005));
+    // Fast movement follows hand instantly (0.95), slow movement remains smooth without dragging (0.60)
+    const alpha = Math.min(0.95, Math.max(0.60, 0.60 + dist * 0.008));
 
     this.currentX += alpha * dx;
     this.currentY += alpha * dy;

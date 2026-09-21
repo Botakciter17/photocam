@@ -107,6 +107,9 @@ export const App: React.FC = () => {
   const navModeRef = useRef<NavMode>(navMode);
   navModeRef.current = navMode;
 
+  const lastHoverCheckRef = useRef<number>(0);
+  const isHoveringRef = useRef<boolean>(false);
+
   // Initialize Hand Tracker & Camera Stream
   useEffect(() => {
     const video = videoRef.current;
@@ -147,9 +150,13 @@ export const App: React.FC = () => {
       // Evaluate kuncup gesture
       const gesture = gestureRef.current.update(true, landmarks);
 
-      // Check if cursor hovers over an interactive element
-      const elementUnderPoint = document.elementFromPoint(x, y);
-      const isHovering = Boolean(elementUnderPoint?.closest('[data-interactive="true"]'));
+      // Check if cursor hovers over an interactive element (throttled every 50ms to eliminate layout thrashing)
+      const now = performance.now();
+      if (now - lastHoverCheckRef.current > 50) {
+        lastHoverCheckRef.current = now;
+        const elementUnderPoint = document.elementFromPoint(x, y);
+        isHoveringRef.current = Boolean(elementUnderPoint?.closest('[data-interactive="true"]'));
+      }
 
       setCursor({
         x,
@@ -158,7 +165,7 @@ export const App: React.FC = () => {
         isFist: gesture.isFist,
         fistProgress: gesture.progress,
         isClickTriggered: gesture.isClickTriggered,
-        isHoveringInteractive: isHovering
+        isHoveringInteractive: isHoveringRef.current
       });
 
       // Dispatch virtual click on confirmed kuncup hold

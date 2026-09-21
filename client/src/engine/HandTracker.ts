@@ -11,6 +11,7 @@ export class HandTracker {
   private handsInstance: any = null;
   private cameraInstance: any = null;
   private isFrozen: boolean = false;
+  private isProcessing: boolean = false;
   private callback: TrackingCallback | null = null;
   private lastActiveArea: number = 0;
   private isRunning: boolean = false;
@@ -51,26 +52,33 @@ export class HandTracker {
       });
 
       this.handsInstance.setOptions({
-        maxNumHands: 4,
-        modelComplexity: 1,
-        minDetectionConfidence: 0.6,
-        minTrackingConfidence: 0.6
+        maxNumHands: 2,
+        modelComplexity: 0, // Lite model for ultra-low latency & 60 FPS
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
       });
 
       this.handsInstance.onResults((results: any) => {
         this.processResults(results);
       });
 
-      // Start camera stream
+      // Start camera stream optimized for real-time gesture tracking
       this.cameraInstance = new cameraUtils(this.videoElement, {
         onFrame: async () => {
-          if (!this.isRunning || this.isFrozen) return;
+          if (!this.isRunning || this.isFrozen || this.isProcessing) return;
           if (this.videoElement && this.videoElement.readyState >= 2) {
-            await this.handsInstance.send({ image: this.videoElement });
+            this.isProcessing = true;
+            try {
+              await this.handsInstance.send({ image: this.videoElement });
+            } catch (err) {
+              console.warn('Hands send frame dropped:', err);
+            } finally {
+              this.isProcessing = false;
+            }
           }
         },
-        width: 1280,
-        height: 720
+        width: 640,
+        height: 480
       });
 
       await this.cameraInstance.start();
@@ -136,6 +144,7 @@ export class HandTracker {
    */
   public setFreeze(frozen: boolean) {
     this.isFrozen = frozen;
+    this.isProcessing = false;
     if (frozen) {
       this.callback?.(null, false, null);
     }
@@ -154,6 +163,7 @@ export class HandTracker {
 
   public stop() {
     this.isRunning = false;
+    this.isProcessing = false;
     if (this.cameraInstance) {
       try {
         this.cameraInstance.stop();

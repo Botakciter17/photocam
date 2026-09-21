@@ -19,7 +19,7 @@ interface PreviewViewProps {
   onConfirm: (compositeDataUrl: string) => void;
 }
 
-export const PreviewView: React.FC<PreviewViewProps> = ({
+const PreviewViewComponent: React.FC<PreviewViewProps> = ({
   photos,
   shotCount,
   selectedFrame,
@@ -240,3 +240,5 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
     </div>
   );
 };
+
+export const PreviewView = React.memo(PreviewViewComponent);

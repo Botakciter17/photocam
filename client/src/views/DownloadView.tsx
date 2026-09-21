@@ -15,7 +15,7 @@ interface DownloadViewProps {
   onNewSession: () => void;
 }
 
-export const DownloadView: React.FC<DownloadViewProps> = ({
+const DownloadViewComponent: React.FC<DownloadViewProps> = ({
   session,
   compositePhotoUrl,
   btsVideoUrl,
@@ -262,3 +262,5 @@ export const DownloadView: React.FC<DownloadViewProps> = ({
     </div>
   );
 };
+
+export const DownloadView = React.memo(DownloadViewComponent);

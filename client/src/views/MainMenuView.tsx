@@ -8,7 +8,7 @@ interface MainMenuViewProps {
   onOpenSettings: () => void;
 }
 
-export const MainMenuView: React.FC<MainMenuViewProps> = ({
+const MainMenuViewComponent: React.FC<MainMenuViewProps> = ({
   navMode,
   onStart,
   onOpenSettings
@@ -113,3 +113,5 @@ export const MainMenuView: React.FC<MainMenuViewProps> = ({
     </div>
   );
 };
+
+export const MainMenuView = React.memo(MainMenuViewComponent);

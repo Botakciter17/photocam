@@ -22,7 +22,7 @@ interface SetupViewProps {
   onStartSession: () => void;
 }
 
-export const SetupView: React.FC<SetupViewProps> = ({
+const SetupViewComponent: React.FC<SetupViewProps> = ({
   stream,
   shotCount,
   delay,
@@ -267,3 +267,5 @@ export const SetupView: React.FC<SetupViewProps> = ({
     </div>
   );
 };
+
+export const SetupView = React.memo(SetupViewComponent);

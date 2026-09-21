@@ -18,11 +18,9 @@ export const VirtualCursor: React.FC<VirtualCursorProps> = ({ cursor, isVisible 
 
   return (
     <div
-      className="fixed pointer-events-none z-[9999] transition-all duration-100 ease-out"
+      className="fixed top-0 left-0 pointer-events-none z-[9999] will-change-transform"
       style={{
-        left: `${cursor.x}px`,
-        top: `${cursor.y}px`,
-        transform: 'translate(-50%, -50%)',
+        transform: `translate3d(${cursor.x}px, ${cursor.y}px, 0) translate(-50%, -50%)`,
       }}
     >
       {/* Outer Halo / Glow Ring with Duolingo Red & Yellow Highlights */}
