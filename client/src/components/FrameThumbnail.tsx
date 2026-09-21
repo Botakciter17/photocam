@@ -3,10 +3,10 @@ import { FrameOption } from '../types/photobooth';
 
 interface FrameThumbnailProps {
   frame: FrameOption;
-  isSelected: boolean;
+  isSelected?: boolean;
 }
 
-export const FrameThumbnail: React.FC<FrameThumbnailProps> = ({ frame, isSelected }) => {
+export const FrameThumbnail: React.FC<FrameThumbnailProps> = ({ frame }) => {
   return (
     <div className="w-full h-full flex flex-col items-center justify-center p-1">
       {/* Mini Vertical Polaroid Photostrip Representation */}

@@ -36,9 +36,6 @@ export class GestureDetector {
     const dMiddleThumb = dist3D(middleTip, thumbTip) / palmLength;
     const dRingThumb = dist3D(ringTip, thumbTip) / palmLength;
 
-    // Distance between index and middle fingertips
-    const dIndexMiddle = dist3D(indexTip, middleTip) / palmLength;
-
     // Cluster radius: average spread of tips
     const avgTipDist = (dIndexThumb + dMiddleThumb + dRingThumb) / 3;
 

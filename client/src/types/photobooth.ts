@@ -2,6 +2,8 @@ export type Step = 'menu' | 'setup' | 'capture' | 'preview' | 'download';
 
 export type NavMode = 'hand' | 'mouse' | 'touch';
 
+export type PrintLayout = 'single-2x6' | 'double-4x6';
+
 export type ShotCount = 1 | 2 | 3 | 4;
 
 export type DelaySeconds = 3 | 5 | 10;

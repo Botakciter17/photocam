@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Step, NavMode, ShotCount, DelaySeconds, FilterType, FrameOption, SessionResult } from './types/photobooth';
+import { Step, NavMode, PrintLayout, ShotCount, DelaySeconds, FilterType, FrameOption, SessionResult } from './types/photobooth';
 import { CursorState } from './types/gesture';
 import { AVAILABLE_FRAMES } from './types/frames';
 import { isMobileDevice } from './utils/device';
@@ -36,6 +36,27 @@ export const App: React.FC = () => {
   });
 
   const [isSettingsModal, setIsSettingsModal] = useState<boolean>(false);
+
+  // Auto-Print Settings (Defaults to ON for kiosk experience)
+  const [autoPrint, setAutoPrint] = useState<boolean>(() => {
+    const saved = localStorage.getItem('photobooth_auto_print');
+    return saved === null ? true : saved === 'true';
+  });
+
+  const [printLayout, setPrintLayout] = useState<PrintLayout>(() => {
+    const saved = localStorage.getItem('photobooth_print_layout') as PrintLayout | null;
+    return saved === 'double-4x6' ? 'double-4x6' : 'single-2x6';
+  });
+
+  const handleToggleAutoPrint = (enabled: boolean) => {
+    setAutoPrint(enabled);
+    localStorage.setItem('photobooth_auto_print', String(enabled));
+  };
+
+  const handleChangePrintLayout = (layout: PrintLayout) => {
+    setPrintLayout(layout);
+    localStorage.setItem('photobooth_print_layout', layout);
+  };
 
   // Photobooth Flow States: menu -> setup -> capture -> preview -> download
   const [step, setStep] = useState<Step>('menu');
@@ -335,12 +356,16 @@ export const App: React.FC = () => {
         secondsRemaining={Math.max(0, 45 - noHandSeconds)}
       />
 
-      {/* Navigation Selection / Settings Modal */}
+      {/* Navigation Selection & Settings Modal */}
       <NavigationModal
         isOpen={isNavModalOpen}
         currentMode={navMode}
+        autoPrint={autoPrint}
+        printLayout={printLayout}
         isSettingsMode={isSettingsModal}
         onSelectMode={handleSelectNavMode}
+        onToggleAutoPrint={handleToggleAutoPrint}
+        onChangePrintLayout={handleChangePrintLayout}
         onClose={() => {
           setIsNavModalOpen(false);
           setIsSettingsModal(false);
@@ -409,12 +434,14 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* Screen 4: QR Download (Result Strip + BTS MP4 + Big QR + Direct Download) */}
+      {/* Screen 4: QR Download (Result Strip + BTS MP4 + Big QR + Direct Download + Auto-Print) */}
       {step === 'download' && sessionResult && (
         <DownloadView
           session={sessionResult}
           compositePhotoUrl={compositePhotoUrl}
           btsVideoUrl={btsVideoUrl}
+          autoPrint={autoPrint}
+          printLayout={printLayout}
           secondsRemaining={downloadSecondsRemaining}
           onBackToResult={() => setStep('preview')}
           onNewSession={resetToMenu}

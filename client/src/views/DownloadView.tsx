@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { SessionResult } from '../types/photobooth';
+import { SessionResult, PrintLayout } from '../types/photobooth';
+import { printPhotoStrip } from '../utils/printManager';
 import { Download, Copy, RotateCcw, QrCode, Check, Image, Video } from 'lucide-react';
 
 interface DownloadViewProps {
   session: SessionResult;
   compositePhotoUrl?: string | null;
   btsVideoUrl?: string | null;
+  autoPrint?: boolean;
+  printLayout?: PrintLayout;
   secondsRemaining: number;
   onBackToResult: () => void;
   onNewSession: () => void;
@@ -16,12 +19,15 @@ export const DownloadView: React.FC<DownloadViewProps> = ({
   session,
   compositePhotoUrl,
   btsVideoUrl,
+  autoPrint = false,
+  printLayout = 'single-2x6',
   secondsRemaining,
   onBackToResult,
   onNewSession
 }) => {
   const [copied, setCopied] = useState<boolean>(false);
   const [previewTab, setPreviewTab] = useState<'photo' | 'video'>('video');
+  const [hasAutoPrinted, setHasAutoPrinted] = useState<boolean>(false);
 
   useEffect(() => {
     try {
@@ -35,6 +41,17 @@ export const DownloadView: React.FC<DownloadViewProps> = ({
       console.warn('Confetti effect failed', e);
     }
   }, []);
+
+  // Trigger auto-print once on component mount if autoPrint option is enabled
+  useEffect(() => {
+    if (autoPrint && compositePhotoUrl && !hasAutoPrinted) {
+      setHasAutoPrinted(true);
+      const t = setTimeout(() => {
+        printPhotoStrip(compositePhotoUrl, printLayout);
+      }, 400);
+      return () => clearTimeout(t);
+    }
+  }, [autoPrint, compositePhotoUrl, printLayout, hasAutoPrinted]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(session.downloadUrl).then(() => {

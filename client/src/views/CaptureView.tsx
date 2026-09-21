@@ -39,7 +39,6 @@ export const CaptureView: React.FC<CaptureViewProps> = ({
 
   const capturedPhotosRef = useRef<string[]>([...existingPhotos]);
   const btsFramesPerShotRef = useRef<string[][]>([[], [], [], []]);
-  const btsSamplerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (localVideoRef.current && stream) {

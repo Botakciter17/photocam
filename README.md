@@ -17,13 +17,18 @@ Aplikasi web photobooth hands-free berbasis browser untuk desktop kiosk. Penggun
 4. **Preview & Retake Parsial:**
    - Hasil foto komposit 1920x1080 px ditampilkan langsung.
    - Thumbnail tiap shot dapat dipilih dengan gestur kuncup untuk retake foto tertentu saja.
-5. **Fitur Dibalik Layar (BTS GIF & MP4 Video):**
-   - Otomatis membuat animasi looping GIF dan video live MP4 dari rangkaian jepretan foto.
-   - Dapat dipratinjau dan diunduh langsung dalam format Polaroid JPG, Animasi GIF, maupun Video MP4.
-6. **Download via Scan QR Code:**
+5. **Fitur Dibalik Layar (BTS Live Video):**
+   - Otomatis membuat video live MP4/WebM dari rangkaian foto jepretan webcam dengan efek gerak live photo.
+   - Dapat dipratinjau dan diunduh langsung dalam format Polaroid JPG maupun Video Live.
+6. **Auto Print Out (Cetak Otomatis ke Printer Fisik):**
+   - Begitu sesi foto selesai, sistem langsung memicu pencetakan otomatis foto polaroid strip ke printer default.
+   - Mendukung format kertas: **1 Strip (2x6 inch)** dan **2 Strip berdampingan (4x6 inch / 4R)**.
+   - Tombol manual **[ CETAK FOTO (PRINT) ]** tersedia di layar download untuk mencetak ulang salinan tambahan.
+   - Dukungan **Silent Print (tanpa popup dialog)** menggunakan flag Chrome/Edge `--kiosk-printing`.
+7. **Download via Scan QR Code:**
    - Backend Express melayani unduhan langsung (`http://<DOMAIN_ATAU_IP>:3001/download/<token>`).
-   - Foto dan animasi tersimpan permanen di server/VPS agar link QR code dapat diakses selamanya oleh pengguna kapan saja.
-7. **Watchdog & Fallback Idle:**
+   - Foto dan video tersimpan permanen di server/VPS agar link QR code dapat diakses selamanya oleh pengguna kapan saja.
+8. **Watchdog & Fallback Idle:**
    - 10 detik tanpa tangan: Overlay panduan "Angkat tangan Anda".
    - 45 detik idle: Reset sesi otomatis ke layar Menu Utama (RAM browser dibersihkan untuk pengguna berikutnya).
 
@@ -38,15 +43,15 @@ Aplikasi web photobooth hands-free berbasis browser untuk desktop kiosk. Penggun
 │   │   └── frames/             # Template SVG 16:9 landscape
 │   └── src/
 │       ├── engine/             # HandTracker, GestureDetector, CursorSmoother, SoundEffects
-│       ├── components/         # VirtualCursor, HandWarningOverlay, InteractiveButton
-│       ├── views/              # StandbyView, ShotSelectView, FrameSelectView, CaptureView, PreviewView, DownloadView
-│       └── utils/              # canvasCompositor (1920x1080), virtualClick
+│       ├── components/         # VirtualCursor, HandWarningOverlay, NavigationModal, FrameThumbnail
+│       ├── views/              # MainMenuView, SetupView, CaptureView, PreviewView, DownloadView
+│       └── utils/              # canvasCompositor, btsGenerator, printManager, virtualClick, device
 ├── server/                     # Backend Node.js Express + TypeScript
 │   ├── src/
 │   │   ├── network.ts          # Auto-detect IP LAN lokal
-│   │   ├── storage.ts          # Simpan foto sementara & purge job (1 jam)
-│   │   └── routes/             # POST /api/sessions, GET /download/:token
-│   └── storage/photos/         # Penyimpanan lokal sementara
+│   │   ├── storage.ts          # Simpan foto & video permanen
+│   │   └── routes/             # POST /api/sessions, GET /download/:token, GET /api/photos/:token
+│   └── storage/photos/         # Penyimpanan lokal foto & video
 ├── prd-webfoto-photobooth.md   # Dokumen PRD
 └── package.json                # Workspace root
 ```
@@ -80,4 +85,13 @@ Atau jalankan terpisah di 2 terminal:
 ### 3. Akses Kiosk Photobooth
 - Buka browser Chrome / Edge di komputer kiosk: `http://localhost:5173`
 - Berikan izin akses Webcam.
-- Angkat tangan ke depan kamera dan mulai berfoto!
+- Pilih mode navigasi (Gestur Tangan atau Mouse).
+
+### 4. Setup Silent Printing (Opsional untuk Booth Fisik)
+Agar printer langsung mencetak otomatis tanpa popup dialog browser:
+1. Pastikan printer foto (DNP / Epson / Canon) sudah diset sebagai **Default Printer** di OS.
+2. Jalankan Chrome dalam kiosk mode dengan flag `--kiosk-printing`:
+   ```bash
+   google-chrome --kiosk --kiosk-printing http://localhost:5173
+   ```
+   *(Pada Windows: `chrome.exe --kiosk --kiosk-printing http://localhost:5173`)*
