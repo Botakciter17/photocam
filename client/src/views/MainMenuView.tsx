@@ -1,17 +1,19 @@
 import React from 'react';
 import { NavMode } from '../types/photobooth';
-import { Play, Hand, MousePointerClick, QrCode, Mouse } from 'lucide-react';
+import { Play, Hand, MousePointerClick, QrCode, Mouse, Printer } from 'lucide-react';
 
 interface MainMenuViewProps {
   navMode: NavMode;
   onStart: () => void;
   onOpenSettings: () => void;
+  onOpenDevPrint?: () => void;
 }
 
 const MainMenuViewComponent: React.FC<MainMenuViewProps> = ({
   navMode,
   onStart,
-  onOpenSettings
+  onOpenSettings,
+  onOpenDevPrint
 }) => {
   return (
     <div className="flex flex-col h-full w-full bg-[#FDF7F5] text-[#4B3F3D] overflow-hidden select-none p-6 gap-6">
@@ -23,20 +25,35 @@ const MainMenuViewComponent: React.FC<MainMenuViewProps> = ({
           </span>
         </div>
 
-        {/* Navigation Mode Setting Trigger (Desktop only) */}
-        {navMode !== 'touch' && (
-          <button
-            data-interactive="true"
-            onClick={onOpenSettings}
-            className="btn-duo-secondary px-4 py-2 text-xs font-black flex items-center gap-2 hover:border-duo-red transition-all"
-            title="Ubah Mode Navigasi"
-          >
-            <span>{navMode === 'hand' ? 'Navigasi: Gestur Tangan' : 'Navigasi: Mouse'}</span>
-            <span className="bg-[#FFF0ED] text-duo-red px-2 py-0.5 rounded-lg border border-duo-border text-[10px] uppercase font-black">
-              Ubah
-            </span>
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {/* Dev Test Print Button */}
+          {onOpenDevPrint && (
+            <button
+              data-interactive="true"
+              onClick={onOpenDevPrint}
+              className="btn-duo-secondary px-3.5 py-2 text-xs font-black flex items-center gap-2 text-duo-red hover:bg-[#FFF0ED] border-duo-border transition-all cursor-pointer"
+              title="Buka Halaman Uji Cetak Printer"
+            >
+              <Printer className="w-4 h-4 text-duo-red" />
+              <span>Test Print (Dev)</span>
+            </button>
+          )}
+
+          {/* Navigation Mode Setting Trigger (Desktop only) */}
+          {navMode !== 'touch' && (
+            <button
+              data-interactive="true"
+              onClick={onOpenSettings}
+              className="btn-duo-secondary px-4 py-2 text-xs font-black flex items-center gap-2 hover:border-duo-red transition-all"
+              title="Ubah Mode Navigasi"
+            >
+              <span>{navMode === 'hand' ? 'Navigasi: Gestur Tangan' : 'Navigasi: Mouse'}</span>
+              <span className="bg-[#FFF0ED] text-duo-red px-2 py-0.5 rounded-lg border border-duo-border text-[10px] uppercase font-black">
+                Ubah
+              </span>
+            </button>
+          )}
+        </div>
       </header>
 
       {/* 2. Main Hero Content (Duolingo Style 3D Card) */}
@@ -108,6 +125,21 @@ const MainMenuViewComponent: React.FC<MainMenuViewProps> = ({
             <Play className="w-8 h-8 fill-current stroke-[2]" />
             <span>MULAI FOTO SEKARANG</span>
           </button>
+
+          {/* Dev Test Print Direct Link */}
+          {onOpenDevPrint && (
+            <div className="mt-4">
+              <button
+                type="button"
+                data-interactive="true"
+                onClick={onOpenDevPrint}
+                className="text-xs font-bold text-[#8B7B78] hover:text-duo-red flex items-center gap-1.5 transition-colors cursor-pointer py-1.5 px-3 rounded-xl hover:bg-[#FDF7F5] border border-transparent hover:border-[#E8CEC9]"
+              >
+                <Printer className="w-3.5 h-3.5 text-duo-red" />
+                <span>Mode Pengujian: Halaman Tes Cetak Printer (Dev)</span>
+              </button>
+            </div>
+          )}
         </div>
       </main>
     </div>

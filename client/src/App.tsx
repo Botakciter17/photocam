@@ -16,6 +16,7 @@ import { SetupView } from './views/SetupView';
 import { CaptureView } from './views/CaptureView';
 import { PreviewView } from './views/PreviewView';
 import { DownloadView } from './views/DownloadView';
+import { DevPrintView } from './views/DevPrintView';
 
 export const App: React.FC = () => {
   // Navigation Mode: 'hand' | 'mouse' | 'touch' (mobile skips both)
@@ -28,8 +29,23 @@ export const App: React.FC = () => {
     return 'hand'; // Default desktop fallback
   });
 
+  const isDevPrintUrl = () => {
+    if (typeof window === 'undefined') return false;
+    const path = window.location.pathname.toLowerCase();
+    const hash = window.location.hash.toLowerCase();
+    const search = window.location.search.toLowerCase();
+    return (
+      path === '/dev-print' ||
+      path.startsWith('/dev-print') ||
+      hash === '#dev-print' ||
+      hash.includes('dev-print') ||
+      search.includes('dev-print')
+    );
+  };
+
   // Navigation Modal: shows on first load for desktop if not chosen yet
   const [isNavModalOpen, setIsNavModalOpen] = useState<boolean>(() => {
+    if (isDevPrintUrl()) return false;
     if (isMobile) return false;
     const saved = localStorage.getItem('photobooth_nav_mode');
     return !saved;
@@ -58,8 +74,25 @@ export const App: React.FC = () => {
     localStorage.setItem('photobooth_print_layout', layout);
   };
 
-  // Photobooth Flow States: menu -> setup -> capture -> preview -> download
-  const [step, setStep] = useState<Step>('menu');
+  // Photobooth Flow States: menu -> setup -> capture -> preview -> download -> dev-print
+  const [step, setStep] = useState<Step>(() => {
+    return isDevPrintUrl() ? 'dev-print' : 'menu';
+  });
+
+  // Listen to browser navigation / hash change for dev-print routing
+  useEffect(() => {
+    const handleUrlChange = () => {
+      if (isDevPrintUrl()) {
+        setStep('dev-print');
+      }
+    };
+    window.addEventListener('popstate', handleUrlChange);
+    window.addEventListener('hashchange', handleUrlChange);
+    return () => {
+      window.removeEventListener('popstate', handleUrlChange);
+      window.removeEventListener('hashchange', handleUrlChange);
+    };
+  }, []);
 
   // Session Parameters (configurable in Screen 1 Setup & Screen 3 Preview)
   const [shotCount, setShotCount] = useState<ShotCount>(3);
@@ -211,7 +244,7 @@ export const App: React.FC = () => {
       }
 
       // 2. Idle hand detection (only active when in 'hand' gesture mode)
-      if (navMode === 'hand' && step !== 'menu' && step !== 'capture' && !isTrackingFrozen) {
+      if (navMode === 'hand' && step !== 'menu' && step !== 'capture' && step !== 'dev-print' && !isTrackingFrozen) {
         if (!cursor.isHandPresent) {
           setNoHandSeconds((prev) => {
             const next = prev + 1;
@@ -340,6 +373,20 @@ export const App: React.FC = () => {
     setIsNavModalOpen(true);
   };
 
+  const handleOpenDevPrint = () => {
+    window.history.pushState(null, '', '/dev-print');
+    setStep('dev-print');
+    setIsNavModalOpen(false);
+    setIsSettingsModal(false);
+  };
+
+  const handleBackFromDevPrint = () => {
+    if (window.location.pathname === '/dev-print' || window.location.hash === '#dev-print') {
+      window.history.pushState(null, '', '/');
+    }
+    setStep('menu');
+  };
+
   return (
     <div className="relative h-screen w-screen bg-[#FDF7F5] text-[#4B3F3D] overflow-hidden font-sans">
       {/* Background Persistent Video for MediaPipe & Webcam Capture */}
@@ -354,30 +401,33 @@ export const App: React.FC = () => {
       {/* Virtual Cursor Overlay (only active in 'hand' gesture mode) */}
       <VirtualCursor
         cursor={cursor}
-        isVisible={navMode === 'hand' && !isTrackingFrozen}
+        isVisible={navMode === 'hand' && !isTrackingFrozen && step !== 'dev-print'}
       />
 
       {/* 10s Idle Warning Overlay (only active in 'hand' gesture mode) */}
       <HandWarningOverlay
-        show={navMode === 'hand' && noHandSeconds >= 10 && step !== 'menu' && step !== 'capture'}
+        show={navMode === 'hand' && noHandSeconds >= 10 && step !== 'menu' && step !== 'capture' && step !== 'dev-print'}
         secondsRemaining={Math.max(0, 45 - noHandSeconds)}
       />
 
       {/* Navigation Selection & Settings Modal */}
-      <NavigationModal
-        isOpen={isNavModalOpen}
-        currentMode={navMode}
-        autoPrint={autoPrint}
-        printLayout={printLayout}
-        isSettingsMode={isSettingsModal}
-        onSelectMode={handleSelectNavMode}
-        onToggleAutoPrint={handleToggleAutoPrint}
-        onChangePrintLayout={handleChangePrintLayout}
-        onClose={() => {
-          setIsNavModalOpen(false);
-          setIsSettingsModal(false);
-        }}
-      />
+      {step !== 'dev-print' && (
+        <NavigationModal
+          isOpen={isNavModalOpen}
+          currentMode={navMode}
+          autoPrint={autoPrint}
+          printLayout={printLayout}
+          isSettingsMode={isSettingsModal}
+          onSelectMode={handleSelectNavMode}
+          onToggleAutoPrint={handleToggleAutoPrint}
+          onChangePrintLayout={handleChangePrintLayout}
+          onOpenDevPrint={handleOpenDevPrint}
+          onClose={() => {
+            setIsNavModalOpen(false);
+            setIsSettingsModal(false);
+          }}
+        />
+      )}
 
       {/* Screen 0: Main Menu Standby Screen */}
       {step === 'menu' && (
@@ -385,6 +435,7 @@ export const App: React.FC = () => {
           navMode={navMode}
           onStart={() => setStep('setup')}
           onOpenSettings={handleOpenSettings}
+          onOpenDevPrint={handleOpenDevPrint}
         />
       )}
 
@@ -453,6 +504,11 @@ export const App: React.FC = () => {
           onBackToResult={() => setStep('preview')}
           onNewSession={resetToMenu}
         />
+      )}
+
+      {/* Screen 5: Dev Print Test Page */}
+      {step === 'dev-print' && (
+        <DevPrintView onBack={handleBackFromDevPrint} />
       )}
     </div>
   );

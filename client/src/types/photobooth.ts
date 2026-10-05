@@ -1,8 +1,19 @@
-export type Step = 'menu' | 'setup' | 'capture' | 'preview' | 'download';
+export type Step = 'menu' | 'setup' | 'capture' | 'preview' | 'download' | 'dev-print';
 
 export type NavMode = 'hand' | 'mouse' | 'touch';
 
 export type PrintLayout = 'single-2x6' | 'double-4x6';
+
+export type TextPrintLayout = 'single-2x6' | 'double-4x6' | 'thermal-58' | 'thermal-80' | 'a4';
+
+export type PrintPreset = 'receipt' | 'alignment' | 'custom';
+
+export interface PrintTextOptions {
+  title?: string;
+  text: string;
+  layout: TextPrintLayout;
+  showRuler?: boolean;
+}
 
 export type ShotCount = 1 | 2 | 3 | 4;
 

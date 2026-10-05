@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavMode, PrintLayout } from '../types/photobooth';
-import { Sparkles, Mouse, Hand, Check, X, Printer, RefreshCw } from 'lucide-react';
+import { Sparkles, Mouse, Hand, Check, X, Printer, RefreshCw, Wrench } from 'lucide-react';
 
 interface PrinterStatusData {
   connected: boolean;
@@ -19,6 +19,7 @@ interface NavigationModalProps {
   onToggleAutoPrint: (enabled: boolean) => void;
   onChangePrintLayout: (layout: PrintLayout) => void;
   onClose?: () => void;
+  onOpenDevPrint?: () => void;
 }
 
 export const NavigationModal: React.FC<NavigationModalProps> = ({
@@ -30,7 +31,8 @@ export const NavigationModal: React.FC<NavigationModalProps> = ({
   onSelectMode,
   onToggleAutoPrint,
   onChangePrintLayout,
-  onClose
+  onClose,
+  onOpenDevPrint
 }) => {
   const [printerStatus, setPrinterStatus] = useState<PrinterStatusData | null>(null);
   const [isLoadingPrinter, setIsLoadingPrinter] = useState<boolean>(false);
@@ -284,6 +286,24 @@ export const NavigationModal: React.FC<NavigationModalProps> = ({
               </button>
             </div>
           </div>
+
+          {/* Dev Test Print Shortcut */}
+          {onOpenDevPrint && (
+            <div className="pt-2.5 mt-2.5 border-t border-[#E8CEC9] flex items-center justify-between">
+              <span className="text-[11px] font-bold text-[#8B7B78]">
+                Diagnostik Cetak Teks:
+              </span>
+              <button
+                type="button"
+                data-interactive="true"
+                onClick={onOpenDevPrint}
+                className="btn-duo-secondary px-2.5 py-1 rounded-xl text-[11px] font-black flex items-center gap-1.5 text-duo-red hover:bg-[#FFF0ED]"
+              >
+                <Wrench className="w-3.5 h-3.5" />
+                <span>Buka Halaman Dev Print</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Confirm / Continue Button */}

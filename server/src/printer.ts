@@ -1,15 +1,25 @@
-import { exec } from 'child_process';
+import { exec, execFile } from 'child_process';
 import util from 'util';
 import fs from 'fs';
+import os from 'os';
+import path from 'path';
 import net from 'net';
 
 const execAsync = util.promisify(exec);
+const execFileAsync = util.promisify(execFile);
 
 export interface PrinterStatusInfo {
   connected: boolean;
   defaultPrinter: string | null;
   printers: string[];
   statusText: string;
+}
+
+export interface ServerTestPrintOptions {
+  printerName?: string;
+  text: string;
+  title?: string;
+  layout?: string;
 }
 
 /**
@@ -299,3 +309,84 @@ export async function detectPrinterStatus(): Promise<PrinterStatusInfo> {
     };
   }
 }
+
+/**
+ * Direct server-side text printing to CUPS or Windows spooler.
+ */
+export async function directServerPrint(options: ServerTestPrintOptions): Promise<{
+  success: boolean;
+  message: string;
+  jobId?: string;
+}> {
+  const isWindows = process.platform === 'win32';
+  const tempFilePath = path.join(os.tmpdir(), `photobooth-test-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.txt`);
+
+  const separator = '='.repeat(38);
+  const now = new Date();
+  const timestamp = now.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'medium' });
+
+  const title = options.title || 'PHOTOBOOTH KIOSK - TEST PRINT';
+  const formattedContent = [
+    separator,
+    title,
+    `Waktu   : ${timestamp}`,
+    `Printer : ${options.printerName || 'Default System'}`,
+    `Format  : ${options.layout || 'Text / Direct'}`,
+    separator,
+    '',
+    options.text.trim(),
+    '',
+    separator,
+    'DIAGNOSTIC TEST - BERHASIL DICETAK',
+    separator,
+    '\n\n' // Form feed spacing
+  ].join('\n');
+
+  try {
+    await fs.promises.writeFile(tempFilePath, formattedContent, 'utf8');
+
+    if (isWindows) {
+      const printerArg = options.printerName ? `-Name '${options.printerName.replace(/'/g, "''")}'` : '';
+      const psCommand = `Get-Content -LiteralPath '${tempFilePath.replace(/'/g, "''")}' -Raw | Out-Printer ${printerArg}`;
+      await execAsync(`powershell -NoProfile -Command "${psCommand}"`, { timeout: 10000 });
+
+      return {
+        success: true,
+        message: `Job cetak berhasil dikirim ke printer Windows (${options.printerName || 'Default'})`
+      };
+    }
+
+    // Linux / macOS via CUPS `lp`
+    const args: string[] = [];
+    if (options.printerName) {
+      args.push('-d', options.printerName);
+    }
+    args.push(tempFilePath);
+
+    const { stdout, stderr } = await execFileAsync('lp', args, { timeout: 10000 });
+    const output = (stdout + ' ' + stderr).trim();
+
+    // Extract request id (e.g. "request id is L3210-Series-14 (1 file(s))")
+    const match = output.match(/request id is ([^\s]+)/i);
+    const jobId = match ? match[1] : undefined;
+
+    return {
+      success: true,
+      message: `Job cetak berhasil dikirim ke CUPS (${options.printerName || 'Default'})`,
+      jobId
+    };
+  } catch (err: any) {
+    const errorMsg = String(err?.stderr || err?.stdout || err?.message || 'Gagal mengirim job cetak');
+    return {
+      success: false,
+      message: `Gagal mencetak: ${errorMsg}`
+    };
+  } finally {
+    try {
+      if (fs.existsSync(tempFilePath)) {
+        await fs.promises.unlink(tempFilePath);
+      }
+    } catch {}
+  }
+}
+

@@ -4,7 +4,7 @@ import { CONFIG } from './config.js';
 import { getLocalIp } from './network.js';
 import { sessionsRouter } from './routes/sessions.js';
 import { downloadRouter } from './routes/download.js';
-import { detectPrinterStatus } from './printer.js';
+import { detectPrinterStatus, directServerPrint } from './printer.js';
 
 const app = express();
 
@@ -30,6 +30,33 @@ app.get('/api/printer/status', async (req, res) => {
       defaultPrinter: null,
       printers: [],
       statusText: 'Gagal membaca status printer'
+    });
+  }
+});
+
+// Printer direct test print endpoint
+app.post('/api/printer/test-print', async (req, res) => {
+  try {
+    const { text, printerName, title, layout } = req.body;
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'Teks untuk dicetak wajib diisi.'
+      });
+    }
+
+    const result = await directServerPrint({
+      text,
+      printerName: printerName || undefined,
+      title: title || undefined,
+      layout: layout || undefined
+    });
+
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({
+      success: false,
+      message: err.message || 'Gagal memproses pencetakan server'
     });
   }
 });
